@@ -1,14 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { systemsDb } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const id = Number.parseInt(params.id)
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "Invalid system ID" }, { status: 400 })
-    }
+    const { id } = params
 
-    systemsDb.delete(id)
+    await prisma.system.delete({
+      where: { id },
+    })
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Error deleting system:", error)

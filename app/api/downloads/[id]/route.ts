@@ -1,31 +1,33 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { downloadsDb } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { unlink } from "fs/promises"
 import { join } from "path"
+import { existsSync } from "fs"
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const id = Number.parseInt(params.id)
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "Invalid download ID" }, { status: 400 })
-    }
+    const { id } = params
 
     // Get download info before deleting
-    const downloads = downloadsDb.getAll()
-    const download = downloads.find((d: any) => d.id === id)
+    const download = await prisma.download.findUnique({
+      where: { id },
+    })
 
-    if (download) {
-      // Delete file from filesystem
-      try {
-        const filePath = join(process.cwd(), "public", download.file_path)
-        await unlink(filePath)
-      } catch (error) {
-        console.warn("Could not delete file:", error)
-      }
+    if (!download) {
+      return NextResponse.json({ error: "Download not found" }, { status: 404 })
+    }
+
+    // Delete file from disk
+    const filePath = join(process.cwd(), "uploads", download.filePath)
+    if (existsSync(filePath)) {
+      await unlink(filePath)
     }
 
     // Delete from database
-    downloadsDb.delete(id)
+    await prisma.download.delete({
+      where: { id },
+    })
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Error deleting download:", error)

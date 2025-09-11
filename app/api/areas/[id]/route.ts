@@ -1,14 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { areasDb } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const id = Number.parseInt(params.id)
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "Invalid area ID" }, { status: 400 })
-    }
+    const { id } = params
 
-    areasDb.delete(id)
+    await prisma.area.delete({
+      where: { id },
+    })
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Error deleting area:", error)

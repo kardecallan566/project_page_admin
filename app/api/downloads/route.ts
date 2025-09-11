@@ -1,11 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { downloadsDb } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
+import { existsSync } from "fs"
 
 export async function GET() {
   try {
-    const downloads = downloadsDb.getAll()
+    const downloads = await prisma.download.findMany({
+      orderBy: { createdAt: "desc" },
+    })
     return NextResponse.json(downloads)
   } catch (error) {
     console.error("Error fetching downloads:", error)
@@ -24,29 +27,35 @@ export async function POST(request: NextRequest) {
     }
 
     // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), "public", "uploads")
-    try {
+    const uploadsDir = join(process.cwd(), "uploads")
+    if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true })
-    } catch (error) {
-      // Directory might already exist
     }
 
     // Generate unique filename
     const timestamp = Date.now()
-    const fileExtension = file.name.split(".").pop()
-    const fileName = `${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`
+    const fileName = `${timestamp}-${file.name}`
     const filePath = join(uploadsDir, fileName)
 
-    // Save file
+    // Save file to disk
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
     await writeFile(filePath, buffer)
 
     // Save to database
-    const result = downloadsDb.create(name, `/uploads/${fileName}`, file.name)
-    return NextResponse.json({ success: true, id: result.lastInsertRowid })
+    const download = await prisma.download.create({
+      data: {
+        name,
+        fileName: file.name,
+        filePath: fileName, // Store relative path
+        fileSize: file.size,
+        mimeType: file.type || "application/octet-stream",
+      },
+    })
+
+    return NextResponse.json(download)
   } catch (error) {
     console.error("Error creating download:", error)
-    return NextResponse.json({ error: "Failed to create download" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to upload file" }, { status: 500 })
   }
 }

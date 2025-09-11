@@ -1,9 +1,23 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { areasDb } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   try {
-    const areas = areasDb.getAll()
+    const areas = await prisma.area.findMany({
+      include: {
+        category: {
+          select: {
+            name: true,
+            system: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    })
     return NextResponse.json(areas)
   } catch (error) {
     console.error("Error fetching areas:", error)
@@ -13,14 +27,29 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, systemId, categoryId } = await request.json()
+    const { name, categoryId } = await request.json()
 
-    if (!name) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 })
+    if (!name || !categoryId) {
+      return NextResponse.json({ error: "Name and category ID are required" }, { status: 400 })
     }
 
-    const result = areasDb.create(name, systemId || undefined, categoryId || undefined)
-    return NextResponse.json({ success: true, id: result.lastInsertRowid })
+    const area = await prisma.area.create({
+      data: { name, categoryId },
+      include: {
+        category: {
+          select: {
+            name: true,
+            system: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return NextResponse.json(area)
   } catch (error) {
     console.error("Error creating area:", error)
     return NextResponse.json({ error: "Failed to create area" }, { status: 500 })

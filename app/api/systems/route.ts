@@ -1,9 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { systemsDb } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   try {
-    const systems = systemsDb.getAll()
+    const systems = await prisma.system.findMany({
+      orderBy: { createdAt: "desc" },
+    })
     return NextResponse.json(systems)
   } catch (error) {
     console.error("Error fetching systems:", error)
@@ -19,8 +21,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Name and link are required" }, { status: 400 })
     }
 
-    const result = systemsDb.create(name, link)
-    return NextResponse.json({ success: true, id: result.lastInsertRowid })
+    const system = await prisma.system.create({
+      data: { name, link },
+    })
+
+    return NextResponse.json(system)
   } catch (error) {
     console.error("Error creating system:", error)
     return NextResponse.json({ error: "Failed to create system" }, { status: 500 })

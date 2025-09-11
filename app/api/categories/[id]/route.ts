@@ -1,14 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { categoriesDb } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const id = Number.parseInt(params.id)
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "Invalid category ID" }, { status: 400 })
-    }
+    const { id } = params
 
-    categoriesDb.delete(id)
+    await prisma.category.delete({
+      where: { id },
+    })
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Error deleting category:", error)

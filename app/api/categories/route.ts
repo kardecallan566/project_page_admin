@@ -1,9 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { categoriesDb } from "@/lib/database"
+import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   try {
-    const categories = categoriesDb.getAll()
+    const categories = await prisma.category.findMany({
+      include: {
+        system: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    })
     return NextResponse.json(categories)
   } catch (error) {
     console.error("Error fetching categories:", error)
@@ -19,8 +28,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Name and system ID are required" }, { status: 400 })
     }
 
-    const result = categoriesDb.create(name, systemId)
-    return NextResponse.json({ success: true, id: result.lastInsertRowid })
+    const category = await prisma.category.create({
+      data: { name, systemId },
+      include: {
+        system: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    return NextResponse.json(category)
   } catch (error) {
     console.error("Error creating category:", error)
     return NextResponse.json({ error: "Failed to create category" }, { status: 500 })
