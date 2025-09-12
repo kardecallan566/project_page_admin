@@ -1,13 +1,24 @@
 "use client"
-
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import {
   Dialog,
   DialogContent,
@@ -17,15 +28,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2, Pencil } from "lucide-react"
 
 interface Category {
   id: string
   name: string
   systemId: string
-  system: {
-    name: string
-  }
+  system: { name: string }
   createdAt: string
 }
 
@@ -40,6 +49,10 @@ export function CategoriesTab() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newCategory, setNewCategory] = useState({ name: "", systemId: "" })
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [editCategoryName, setEditCategoryName] = useState("")
+  const [editCategorySystemId, setEditCategorySystemId] = useState("")
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
   const [error, setError] = useState("")
 
   useEffect(() => {
@@ -76,12 +89,10 @@ export function CategoriesTab() {
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-
     if (!newCategory.name || !newCategory.systemId) {
       setError("Please fill in all fields")
       return
     }
-
     try {
       const response = await fetch("/api/categories", {
         method: "POST",
@@ -90,7 +101,6 @@ export function CategoriesTab() {
         },
         body: JSON.stringify(newCategory),
       })
-
       if (response.ok) {
         const createdCategory = await response.json()
         setCategories([...categories, createdCategory])
@@ -106,12 +116,10 @@ export function CategoriesTab() {
 
   const handleDeleteCategory = async (id: string) => {
     if (!confirm("Are you sure you want to delete this category?")) return
-
     try {
       const response = await fetch(`/api/categories/${id}`, {
         method: "DELETE",
       })
-
       if (response.ok) {
         setCategories(categories.filter((category) => category.id !== id))
       } else {
@@ -121,6 +129,32 @@ export function CategoriesTab() {
       setError("An error occurred")
     }
   }
+  const handleEditCategory = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedCategoryId) return
+
+    try {
+      const response = await fetch(`/api/categories/${selectedCategoryId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editCategoryName,
+          systemId: editCategorySystemId,
+        }),
+      })
+
+      if (response.ok) {
+        const updated = await response.json()
+        setCategories(categories.map((c) => (c.id === updated.id ? updated : c)))
+        setIsEditDialogOpen(false)
+      } else {
+        setError("Failed to update category")
+      }
+    } catch (err) {
+      setError("An error occurred while updating category")
+    }
+  }
+
 
   if (isLoading) {
     return <div className="text-center py-4">Loading categories...</div>
@@ -133,20 +167,20 @@ export function CategoriesTab() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">All Categories</h3>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Category
+              <Plus className="h-4 w-4 mr-2" /> Add Category
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add New Category</DialogTitle>
-              <DialogDescription>Create a new category and assign it to a system.</DialogDescription>
+              <DialogDescription>
+                Create a new category and assign it to a system.
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAddCategory} className="space-y-4">
               <div className="space-y-2">
@@ -154,7 +188,9 @@ export function CategoriesTab() {
                 <Input
                   id="name"
                   value={newCategory.name}
-                  onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewCategory({ ...newCategory, name: e.target.value })
+                  }
                   placeholder="Enter category name"
                   required
                 />
@@ -163,7 +199,9 @@ export function CategoriesTab() {
                 <Label htmlFor="system">System</Label>
                 <Select
                   value={newCategory.systemId}
-                  onValueChange={(value) => setNewCategory({ ...newCategory, systemId: value })}
+                  onValueChange={(value) =>
+                    setNewCategory({ ...newCategory, systemId: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a system" />
@@ -178,7 +216,11 @@ export function CategoriesTab() {
                 </Select>
               </div>
               <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button type="submit">Create Category</Button>
@@ -187,30 +229,102 @@ export function CategoriesTab() {
           </DialogContent>
         </Dialog>
       </div>
-
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>System</TableHead>
+              <TableHead>Download</TableHead>
               <TableHead>Created</TableHead>
+              <TableHead className="w-[100px]">Edit</TableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                <TableCell
+                  colSpan={4}
+                  className="text-center text-muted-foreground py-8"
+                >
                   No categories found. Add your first category to get started.
                 </TableCell>
               </TableRow>
             ) : (
               categories.map((category) => (
                 <TableRow key={category.id}>
-                  <TableCell className="font-medium">{category.name}</TableCell>
+                  <TableCell className="font-medium">
+                    {category.name}
+                  </TableCell>
                   <TableCell>{category.system.name}</TableCell>
-                  <TableCell>{new Date(category.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell className="font-medium">
+                    {category.name}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(category.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Dialog
+                      open={isEditDialogOpen && selectedCategoryId === category.id}
+                      onOpenChange={(open) => {
+                        setIsEditDialogOpen(open)
+                        if (open) {
+                          setSelectedCategoryId(category.id)
+                          setEditCategoryName(category.name)
+                          setEditCategorySystemId(category.system.id)
+                        } else {
+                          setSelectedCategoryId(null)
+                        }
+                      }}
+                    >
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Edit Category</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleEditCategory} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="editName">Category Name</Label>
+                            <Input
+                              id="editName"
+                              value={editCategoryName}
+                              onChange={(e) => setEditCategoryName(e.target.value)}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="editSystem">System</Label>
+                            <Select
+                              value={editCategorySystemId}
+                              onValueChange={(val) => setEditCategorySystemId(val)}
+                            >
+                              <SelectTrigger id="editSystem">
+                                <SelectValue placeholder="Select a system" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {systems.map((s) => (
+                                  <SelectItem key={s.id} value={s.id}>
+                                    {s.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button type="submit">Save</Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
                   <TableCell>
                     <Button
                       variant="ghost"

@@ -1,15 +1,41 @@
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+"use client";
+
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+interface Download {
+  id: number;
+  name: string;
+  filePath: string;
+}
 
 export default function HomePage() {
+  const [downloads, setDownloads] = useState<Download[]>([]);
+
+  useEffect(() => {
+    const fetchDownloads = async () => {
+      try {
+        const res = await fetch("/api/downloads");
+        if (!res.ok) throw new Error("Failed to fetch downloads");
+        const data = await res.json();
+        setDownloads(data);
+      } catch (error) {
+        console.error("Error fetching downloads:", error);
+      }
+    };
+
+    fetchDownloads();
+  }, []);
+
   return (
     <main className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-foreground">Admin System</h1>
+          <h1 className="text-2xl font-bold text-foreground"> </h1>
           <Link href="/login">
-            <Button variant="outline">Admin Login</Button>
+            <Button variant="outline">admin panel</Button>
           </Link>
         </div>
       </header>
@@ -18,52 +44,38 @@ export default function HomePage() {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Hero Image */}
-          <div className="relative w-full h-64 md:h-80 rounded-lg overflow-hidden bg-muted">
-            <img src="/modern-admin-dashboard.png" alt="Admin System Dashboard" className="w-full h-full object-cover" />
+          <div className="relative w-full rounded-lg overflow-hidden bg-muted">
+            <img
+              src="/modern-admin-dashboard.png"
+              alt="Admin System Dashboard"
+              className="w-full h-full object-cover"
+            />
           </div>
 
           {/* Hero Text */}
           <div className="space-y-6">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground text-balance">Welcome to the Admin System</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground text-balance">
+              sitetb
+            </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
-              A comprehensive management platform for organizing systems, categories, areas, and downloads. Streamline
-              your administrative tasks with our intuitive interface and powerful tools.
+              A comprehensive management platform for organizing systems,
+              categories, areas, and downloads. Streamline your administrative
+              tasks with our intuitive interface and powerful tools.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link href="/login">
-                <Button size="lg" className="w-full sm:w-auto">
-                  Access Admin Panel
-                </Button>
-              </Link>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto bg-transparent">
-                Learn More
-              </Button>
-            </div>
-          </div>
 
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
-            <div className="p-6 rounded-lg border border-border bg-card">
-              <h3 className="font-semibold text-card-foreground mb-2">Systems Management</h3>
-              <p className="text-sm text-muted-foreground">
-                Organize and manage all your systems with easy-to-use tools.
-              </p>
-            </div>
-            <div className="p-6 rounded-lg border border-border bg-card">
-              <h3 className="font-semibold text-card-foreground mb-2">Categories</h3>
-              <p className="text-sm text-muted-foreground">Create and organize categories within your systems.</p>
-            </div>
-            <div className="p-6 rounded-lg border border-border bg-card">
-              <h3 className="font-semibold text-card-foreground mb-2">Areas</h3>
-              <p className="text-sm text-muted-foreground">
-                Define specific areas within categories for better organization.
-              </p>
-            </div>
-            <div className="p-6 rounded-lg border border-border bg-card">
-              <h3 className="font-semibold text-card-foreground mb-2">Downloads</h3>
-              <p className="text-sm text-muted-foreground">
-                Upload and manage files with secure download capabilities.
-              </p>
+            {/* 🔥 Botões vindos da API */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              {downloads.map((download) => (
+                <Link
+                  key={download.id}
+                  href={`/uploads/${download.filePath}`}
+                  target="_blank"
+                >
+                  <Button size="lg" className="w-full sm:w-auto">
+                    {download.name}
+                  </Button>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
@@ -76,5 +88,5 @@ export default function HomePage() {
         </div>
       </footer>
     </main>
-  )
+  );
 }

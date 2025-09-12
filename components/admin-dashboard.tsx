@@ -42,7 +42,7 @@ export function AdminDashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="systems" className="flex items-center space-x-2">
               <Database className="h-4 w-4" />
               <span>Systems</span>
@@ -55,10 +55,10 @@ export function AdminDashboard() {
               <MapPin className="h-4 w-4" />
               <span>Areas</span>
             </TabsTrigger>
-            <TabsTrigger value="downloads" className="flex items-center space-x-2">
+            {/* <TabsTrigger value="downloads" className="flex items-center space-x-2">
               <Download className="h-4 w-4" />
               <span>Downloads</span>
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="systems">

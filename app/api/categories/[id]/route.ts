@@ -15,3 +15,24 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     return NextResponse.json({ error: "Failed to delete category" }, { status: 500 })
   }
 }
+
+export async function PUT(req: Request, { params }: { params: { id: string } }) {
+  try {
+    const id = params.id
+    const { name, systemId } = await req.json()
+
+    if (!name || !systemId) {
+      return NextResponse.json({ error: "Name and system ID are required" }, { status: 400 })
+    }
+
+    const updatedCategory = await prisma.category.update({
+      where: { id },
+      data: { name, systemId },
+    })
+
+    return NextResponse.json(updatedCategory)
+  } catch (error) {
+    console.error("Error updating category:", error)
+    return NextResponse.json({ error: "Failed to update category" }, { status: 500 })
+  }
+}

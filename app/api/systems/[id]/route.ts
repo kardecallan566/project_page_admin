@@ -15,3 +15,24 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     return NextResponse.json({ error: "Failed to delete system" }, { status: 500 })
   }
 }
+
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params
+    const { name, link } = await request.json()
+
+    if (!name || !link) {
+      return NextResponse.json({ error: "Name and link are required" }, { status: 400 })
+    }
+
+    const updatedSystem = await prisma.system.update({
+      where: { id },
+      data: { name, link },
+    })
+
+    return NextResponse.json(updatedSystem)
+  } catch (error) {
+    console.error("Error updating system:", error)
+    return NextResponse.json({ error: "Failed to update system" }, { status: 500 })
+  }
+}

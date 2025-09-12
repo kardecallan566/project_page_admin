@@ -4,18 +4,6 @@ import { prisma } from "@/lib/prisma"
 export async function GET() {
   try {
     const areas = await prisma.area.findMany({
-      include: {
-        category: {
-          select: {
-            name: true,
-            system: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
-      },
       orderBy: { createdAt: "desc" },
     })
     return NextResponse.json(areas)
@@ -27,26 +15,14 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, categoryId } = await request.json()
+    const { name, content } = await request.json()
 
-    if (!name || !categoryId) {
-      return NextResponse.json({ error: "Name and category ID are required" }, { status: 400 })
+    if (!name || !content) {
+      return NextResponse.json({ error: "Name and content are required" }, { status: 400 })
     }
 
     const area = await prisma.area.create({
-      data: { name, categoryId },
-      include: {
-        category: {
-          select: {
-            name: true,
-            system: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
-      },
+      data: { name, content },
     })
 
     return NextResponse.json(area)

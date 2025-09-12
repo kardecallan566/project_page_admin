@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,13 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Plus, ExternalLink, Trash2 } from "lucide-react"
+import { Plus, ExternalLink, Trash2, Pencil } from "lucide-react"
 
 interface System {
   id: string
@@ -32,6 +29,9 @@ export function SystemsTab() {
   const [newSystem, setNewSystem] = useState({ name: "", link: "" })
   const [error, setError] = useState("")
 
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [selectedSystem, setSelectedSystem] = useState<System | null>(null)
+
   useEffect(() => {
     fetchSystems()
   }, [])
@@ -43,7 +43,7 @@ export function SystemsTab() {
         const data = await response.json()
         setSystems(data)
       }
-    } catch (error) {
+    } catch {
       setError("Failed to fetch systems")
     } finally {
       setIsLoading(false)
@@ -62,9 +62,7 @@ export function SystemsTab() {
     try {
       const response = await fetch("/api/systems", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newSystem),
       })
 
@@ -76,7 +74,7 @@ export function SystemsTab() {
       } else {
         setError("Failed to create system")
       }
-    } catch (error) {
+    } catch {
       setError("An error occurred")
     }
   }
@@ -85,23 +83,36 @@ export function SystemsTab() {
     if (!confirm("Are you sure you want to delete this system?")) return
 
     try {
-      const response = await fetch(`/api/systems/${id}`, {
-        method: "DELETE",
-      })
-
-      if (response.ok) {
-        setSystems(systems.filter((system) => system.id !== id))
-      } else {
-        setError("Failed to delete system")
-      }
-    } catch (error) {
+      const response = await fetch(`/api/systems/${id}`, { method: "DELETE" })
+      if (response.ok) setSystems(systems.filter((s) => s.id !== id))
+      else setError("Failed to delete system")
+    } catch {
       setError("An error occurred")
     }
   }
 
-  if (isLoading) {
-    return <div className="text-center py-4">Loading systems...</div>
+  const handleEditSystem = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedSystem) return
+
+    try {
+      const response = await fetch(`/api/systems/${selectedSystem.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: selectedSystem.name, link: selectedSystem.link }),
+      })
+      if (response.ok) {
+        const updatedSystem = await response.json()
+        setSystems(systems.map((s) => (s.id === updatedSystem.id ? updatedSystem : s)))
+        setIsEditDialogOpen(false)
+        setSelectedSystem(null)
+      } else setError("Failed to update system")
+    } catch {
+      setError("An error occurred while updating system")
+    }
   }
+
+  if (isLoading) return <div className="text-center py-4">Loading systems...</div>
 
   return (
     <div className="space-y-4">
@@ -111,6 +122,7 @@ export function SystemsTab() {
         </Alert>
       )}
 
+      {/* Add System Dialog */}
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">All Systems</h3>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -123,7 +135,6 @@ export function SystemsTab() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add New System</DialogTitle>
-              <DialogDescription>Create a new system with a name and link.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAddSystem} className="space-y-4">
               <div className="space-y-2">
@@ -132,7 +143,6 @@ export function SystemsTab() {
                   id="name"
                   value={newSystem.name}
                   onChange={(e) => setNewSystem({ ...newSystem, name: e.target.value })}
-                  placeholder="Enter system name"
                   required
                 />
               </div>
@@ -143,7 +153,6 @@ export function SystemsTab() {
                   type="url"
                   value={newSystem.link}
                   onChange={(e) => setNewSystem({ ...newSystem, link: e.target.value })}
-                  placeholder="https://example.com"
                   required
                 />
               </div>
@@ -158,6 +167,7 @@ export function SystemsTab() {
         </Dialog>
       </div>
 
+      {/* Table */}
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
@@ -165,7 +175,8 @@ export function SystemsTab() {
               <TableHead>Name</TableHead>
               <TableHead>Link</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
+              <TableHead className="w-[100px]">Edit</TableHead>
+              <TableHead className="w-[120px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -179,18 +190,72 @@ export function SystemsTab() {
               systems.map((system) => (
                 <TableRow key={system.id}>
                   <TableCell className="font-medium">{system.name}</TableCell>
-                  <TableCell>
+                  <TableCell className="max-w-xs truncate">
                     <a
                       href={system.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:underline flex items-center"
+                      className="text-primary hover:underline"
                     >
                       {system.link}
-                      <ExternalLink className="h-3 w-3 ml-1" />
                     </a>
                   </TableCell>
                   <TableCell>{new Date(system.createdAt).toLocaleDateString()}</TableCell>
+
+                  {/* Edit Column */}
+                  <TableCell>
+                    <Dialog
+                      open={isEditDialogOpen && selectedSystem?.id === system.id}
+                      onOpenChange={(open) => {
+                        setIsEditDialogOpen(open)
+                        if (open) setSelectedSystem(system)
+                      }}
+                    >
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Edit System</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleEditSystem} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="editName">System Name</Label>
+                            <Input
+                              id="editName"
+                              value={selectedSystem?.name || ""}
+                              onChange={(e) =>
+                                setSelectedSystem((prev) => (prev ? { ...prev, name: e.target.value } : null))
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="editLink">System Link</Label>
+                            <Input
+                              id="editLink"
+                              type="url"
+                              value={selectedSystem?.link || ""}
+                              onChange={(e) =>
+                                setSelectedSystem((prev) => (prev ? { ...prev, link: e.target.value } : null))
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button type="submit">Save</Button>
+                          </div>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
+
+                  {/* Delete Column */}
                   <TableCell>
                     <Button
                       variant="ghost"
@@ -202,6 +267,7 @@ export function SystemsTab() {
                     </Button>
                   </TableCell>
                 </TableRow>
+
               ))
             )}
           </TableBody>
