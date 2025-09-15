@@ -64,7 +64,7 @@ export default function DownloadPageClient({ categoriesWithDownloads }: Props) {
           <div className="flex gap-[15px]">
             {systems.map((system) => (
               <Link key={system.id} href={`${system.link}`} target="_blank">
-                <Button variant="outline">{system.name}</Button>
+                <Button variant="outline">Acessar {system.name}</Button>
               </Link>
             ))}
           </div>
