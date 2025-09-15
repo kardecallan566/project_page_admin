@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = params
+    const { id } = await params
 
     await prisma.system.delete({
       where: { id },
@@ -16,9 +16,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }:{ params: { id: string } }) {
   try {
-    const { id } = params
+    const { id }= await params
     const { name, link } = await request.json()
 
     if (!name || !link) {

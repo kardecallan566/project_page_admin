@@ -328,7 +328,7 @@ export function CategoriesTab() {
 
                     <Dialog open={isDownloadModalOpen} onOpenChange={setIsDownloadModalOpen}>
                       <DialogContent style={{ width: "70vw", maxWidth: "900px" }} className="
-    h-[40vh]          // altura 40% da tela
+    h-[60vh]          // altura 40% da tela
     overflow-auto     // scroll interno se necessário
     p-6
     rounded-lg
@@ -418,7 +418,7 @@ export function CategoriesTab() {
                         if (open) {
                           setSelectedCategoryId(category.id)
                           setEditCategoryName(category.name)
-                          setEditCategorySystemId(category.system.id)
+                          setEditCategorySystemId(category.systemId)
                         } else {
                           setSelectedCategoryId(null)
                         }

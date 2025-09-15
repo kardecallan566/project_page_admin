@@ -34,7 +34,7 @@ export async function PUT(
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = params
+    const { id } = await params
 
     await prisma.area.delete({ where: { id } })
 

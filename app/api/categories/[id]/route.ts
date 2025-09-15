@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = params
+    const { id } = await params
 
     await prisma.category.delete({
       where: { id },
@@ -18,7 +18,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   try {
-    const id = params.id
+    const { id } = await params
     const { name, systemId } = await req.json()
 
     if (!name || !systemId) {
