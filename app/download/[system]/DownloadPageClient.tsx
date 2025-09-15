@@ -57,8 +57,8 @@ export default function DownloadPageClient({ categoriesWithDownloads }: Props) {
       <header className="border-b border-border">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex gap-[15px]"> <Link href={`/`}>
-                <Button variant="outline">Início</Button>
-              </Link></div>
+            <Button variant="outline">Início</Button>
+          </Link></div>
 
           {/* Botões alinhados à direita */}
           <div className="flex gap-[15px]">
@@ -72,43 +72,49 @@ export default function DownloadPageClient({ categoriesWithDownloads }: Props) {
       </header>
 
       {/* Main Content */}
-       <div>
-                <div className="text-left max-w-3xl mx-auto mt-12 px-4">
-                    <h2 className="text-4xl font-bold mb-4">Downloads {categoriesWithDownloads[0]?.system?.name}</h2>
-                    <p className="text-muted-foreground">
-                         Clique nos links abaixo para fazer o download das fichas de notificação e acompanhamento dos casos de tuberculose resistente e esquemas especiais:
-                    </p>
-                </div>
-            </div>
+      <div>
+        <div className="text-left max-w-3xl mx-auto mt-12 px-4">
+          <h2 className="text-4xl font-bold mb-4">Downloads {categoriesWithDownloads[0]?.system?.name}</h2>
+          <p className="text-muted-foreground">
+            Clique nos links abaixo para fazer o download das fichas de notificação e acompanhamento dos casos de tuberculose resistente e esquemas especiais:
+          </p>
+        </div>
+      </div>
       <div className="max-w-3xl mx-auto p-8 space-y-6">
-        {categoriesWithDownloads.map((category) => (
-          <div key={category.id}>
-            <h3 className="text-2xl font-bold">{category.name}</h3>
-            {category.downloads.length === 0 ? (
-              <p className="text-muted-foreground">Nenhum download disponível.</p>
-            ) : (
-              <ul className="list-disc pl-6 space-y-2">
-                {category.downloads.map((download) => (
-                  <li key={download.id}>
-                    <Link
-                      href={`/api/downloads/${download.id}`}
-                      target="_blank"
-                      className="text-blue-600 hover:underline"
-                    >
-                      {download.name || download.fileName}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ))}
+        {categoriesWithDownloads.length === 0 ? (
+          <p className="text-muted-foreground">
+            Nenhuma categoria encontrada para este sistema.
+          </p>
+        ) : (
+          categoriesWithDownloads.map((category) => (
+            <div key={category.id}>
+              <h3 className="text-2xl font-bold">{category.name}</h3>
+              {category.downloads.length === 0 ? (
+                <p className="text-muted-foreground">Nenhum download disponível.</p>
+              ) : (
+                <ul className="list-disc pl-6 space-y-2">
+                  {category.downloads.map((download) => (
+                    <li key={download.id}>
+                      <Link
+                        href={`/api/downloads/${download.id}`}
+                        target="_blank"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {download.name || download.fileName}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))
+        )}
       </div>
 
       <div
-  className="text-left max-w-3xl mx-auto mt-12 px-4 mb-8"
-  dangerouslySetInnerHTML={{ __html: footerText }}
-/>
+        className="text-left max-w-3xl mx-auto mt-12 px-4 mb-8"
+        dangerouslySetInnerHTML={{ __html: footerText }}
+      />
 
       <Footer />
     </main>

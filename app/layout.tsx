@@ -9,8 +9,8 @@ import { Suspense } from "react"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Admin System",
-  description: "Comprehensive admin management system",
+  title: "SiteTB",
+  description: "",
   generator: "Next.js",
 }
 

@@ -51,7 +51,7 @@ export function AdminDashboard() {
               <FolderTree className="h-4 w-4" />
               <span>Categorias</span>
             </TabsTrigger>
-            <TabsTrigger value="areas" className="flex items-center space-x-2">
+            <TabsTrigger value="areas" className="flex items-center space-x-5">
               <MapPin className="h-4 w-4" />
               <span>Áreas</span>
             </TabsTrigger>

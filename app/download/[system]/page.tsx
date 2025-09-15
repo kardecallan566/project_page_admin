@@ -5,17 +5,16 @@ interface PageProps {
   params: { system: string }
 }
 
-export default async function DownloadPage(props: PageProps) {
-  const { params } = await props
+export default async function DownloadPage({ params }: PageProps) {
   const systemId = params.system
 
-  // Buscar categorias e downloads no servidor
+  // Buscar categorias do sistema
   const categories = await prisma.category.findMany({
-    where: { systemId },
+    where: { systemId }, 
     orderBy: { name: "asc" },
-    include: { system: { select: { name: true } } },
   })
 
+  // Adicionar downloads em cada categoria
   const categoriesWithDownloads = await Promise.all(
     categories.map(async (category) => {
       const downloads = await prisma.download.findMany({

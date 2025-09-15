@@ -6,12 +6,6 @@ import { useText } from "@/context/TextContext"
 import { Footer } from "@/components/footer"
 import Link from "next/link";
 
-interface Category {
-  id: string
-  name: string
-  systemId: string
-  system: { name: string }
-}
 
 interface System {
   id: string
@@ -21,23 +15,12 @@ interface System {
 
 
 export default function HomePage() {
-  const [categorias, setCategorias] = useState<Category[]>([]);
   const [systems, setSystems] = useState<System[]>([]);
   const { areas } = useText()
 
   const heroText = areas.find(a => a.name === "botdy")?.content || "Default hero text";
 
   useEffect(() => {
-    const fetchCategorias = async () => {
-      try {
-        const res = await fetch("/api/categories");
-        if (!res.ok) throw new Error("Failed to fetch downloads");
-        const data = await res.json();
-        setCategorias(data);
-      } catch (error) {
-        console.error("Error fetching downloads:", error);
-      }
-    };
 
     const fetchSystems = async () => {
       try {
@@ -49,8 +32,6 @@ export default function HomePage() {
         console.error("Error fetching systems:", error);
       }
     };
-
-    fetchCategorias();
     fetchSystems();
   }, []);
 
@@ -66,7 +47,7 @@ export default function HomePage() {
             {systems.map((system) => (
               <Link key={system.id} href={`${system.link}`} target="_blank">
                 <Button variant="outline">
-                  {system.name}
+                   Acessar {system.name}
                 </Button>
               </Link>
             ))}
@@ -89,20 +70,20 @@ export default function HomePage() {
           {/* Hero Text */}
           <div className="space-y-6">
             <h2 className="text-4xl text-center md:text-5xl font-bold text-foreground text-balance">
-              Sitetb
+              SiteTB
             </h2>
             <p dangerouslySetInnerHTML={{ __html: heroText }}>
             </p>
 
             {/* 🔥 Botões vindos da API */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              {categorias.map((categoria) => (
+              {systems.map((system) => (
                 <Link
-                  key={categoria.id}
-                  href={`/download/${categoria.systemId}`}
+                  key={system.id}
+                  href={`/download/${system.id}`}
                 >
                   <Button size="lg" className="w-full sm:w-auto">
-                    {categoria.name}
+                   Downloads - {system.name}
                   </Button>
                 </Link>
               ))}

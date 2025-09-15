@@ -132,7 +132,7 @@ export function AreasTab() {
               Add Area
             </Button> */}
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[900px] w-full">
             <DialogHeader>
               <DialogTitle>Add New Area</DialogTitle>
             </DialogHeader>
@@ -211,7 +211,7 @@ export function AreasTab() {
                           <Pencil className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
+                      <DialogContent className="sm:max-w-[900px] w-full">
                         <DialogHeader>
                           <DialogTitle>Editar Área</DialogTitle>
                         </DialogHeader>
