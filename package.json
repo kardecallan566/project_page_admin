@@ -40,6 +40,7 @@
     "@radix-ui/react-tooltip": "1.1.6",
     "@remix-run/react": "latest",
     "@sveltejs/kit": "latest",
+    "@tinymce/tinymce-react": "3.11.0",
     "@vercel/analytics": "latest",
     "autoprefixer": "^10.4.20",
     "bcryptjs": "latest",
@@ -62,11 +63,13 @@
     "react-dom": "^19",
     "react-hook-form": "^7.60.0",
     "react-resizable-panels": "^2.1.7",
+    "react-simple-wysiwyg": "^3.4.1",
     "recharts": "2.15.4",
     "sonner": "^1.7.4",
     "svelte": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "tinymce": "~4.7.13",
     "vaul": "^0.9.9",
     "vue": "latest",
     "vue-router": "latest",
@@ -83,6 +86,6 @@
     "typescript": "^5"
   },
   "prisma": {
-  "seed": "ts-node prisma/seed.ts"
-}
+    "seed": "ts-node prisma/seed.ts"
+  }
 }

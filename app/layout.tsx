@@ -4,13 +4,14 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/lib/auth-context"
+import { TextProvider } from "../context/TextContext"
 import { Suspense } from "react"
 import "./globals.css"
 
 export const metadata: Metadata = {
   title: "Admin System",
   description: "Comprehensive admin management system",
-  generator: "v0.app",
+  generator: "Next.js",
 }
 
 export default function RootLayout({
@@ -21,9 +22,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <AuthProvider>{children}</AuthProvider>
-        </Suspense>
+        <TextProvider>
+          <Suspense fallback={<div>Carregando...</div>}>
+            <AuthProvider>{children}</AuthProvider>
+          </Suspense>
+        </TextProvider>
         <Analytics />
       </body>
     </html>

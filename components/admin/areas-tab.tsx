@@ -1,65 +1,58 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Plus, Trash2, Pencil } from "lucide-react"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Trash2, Pencil } from "lucide-react";
+import SimpleWysiwyg from "react-simple-wysiwyg";
 
 interface Area {
-  id: string
-  name: string
-  content: string
-  createdAt: string
+  id: string;
+  name: string;
+  content: string;
+  createdAt: string;
 }
 
 export function AreasTab() {
-  const [areas, setAreas] = useState<Area[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [newArea, setNewArea] = useState({ name: "", content: "" })
-  const [error, setError] = useState("")
+  const [areas, setAreas] = useState<Area[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newArea, setNewArea] = useState({ name: "", content: "" });
+  const [error, setError] = useState("");
 
-  // estados para edição
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [selectedArea, setSelectedArea] = useState<Area | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedArea, setSelectedArea] = useState<Area | null>(null);
 
   useEffect(() => {
-    fetchAreas()
-  }, [])
+    fetchAreas();
+  }, []);
 
   const fetchAreas = async () => {
     try {
-      const response = await fetch("/api/areas")
+      const response = await fetch("/api/areas");
       if (response.ok) {
-        const data = await response.json()
-        setAreas(data)
+        const data = await response.json();
+        setAreas(data);
       }
     } catch (error) {
-      setError("Failed to fetch areas")
+      setError("Failed to fetch areas");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleAddArea = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
 
     if (!newArea.name || !newArea.content) {
-      setError("Please fill in all fields")
-      return
+      setError("Please fill in all fields");
+      return;
     }
 
     try {
@@ -67,62 +60,59 @@ export function AreasTab() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newArea),
-      })
+      });
 
       if (response.ok) {
-        const createdArea = await response.json()
-        setAreas([...areas, createdArea])
-        setNewArea({ name: "", content: "" })
-        setIsDialogOpen(false)
+        const createdArea = await response.json();
+        setAreas([...areas, createdArea]);
+        setNewArea({ name: "", content: "" });
+        setIsDialogOpen(false);
       } else {
-        setError("Failed to create area")
+        setError("Failed to create area");
       }
     } catch (error) {
-      setError("An error occurred")
+      setError("An error occurred");
     }
-  }
+  };
 
   const handleEditArea = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedArea) return
+    e.preventDefault();
+    if (!selectedArea) return;
 
     try {
       const response = await fetch(`/api/areas/${selectedArea.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(selectedArea),
-      })
+      });
 
       if (response.ok) {
-        const updatedArea = await response.json()
-        setAreas(areas.map((a) => (a.id === updatedArea.id ? updatedArea : a)))
-        setIsEditDialogOpen(false)
+        await fetchAreas();
+        setIsEditDialogOpen(false);
       } else {
-        setError("Failed to update area")
+        setError("Failed to update area");
       }
     } catch (error) {
-      setError("An error occurred")
+      setError("An error occurred");
     }
-  }
+  };
 
   const handleDeleteArea = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this area?")) return
+    if (!confirm("Tem certeza de que deseja excluir esta área?")) return;
 
     try {
-      const response = await fetch(`/api/areas/${id}`, { method: "DELETE" })
+      const response = await fetch(`/api/areas/${id}`, { method: "DELETE" });
       if (response.ok) {
-        setAreas(areas.filter((area) => area.id !== id))
+        setAreas(areas.filter((area) => area.id !== id));
       } else {
-        setError("Failed to delete area")
+        setError("Failed to delete area");
       }
     } catch (error) {
-      setError("An error occurred")
+      setError("An error occurred");
     }
-  }
+  };
 
-  if (isLoading) {
-    return <div className="text-center py-4">Loading areas...</div>
-  }
+  if (isLoading) return <div className="text-center py-4">Carregando Áreas...</div>;
 
   return (
     <div className="space-y-4">
@@ -132,42 +122,47 @@ export function AreasTab() {
         </Alert>
       )}
 
+      {/* Header e botão Add */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">All Areas</h3>
+        <h3 className="text-lg font-semibold">Todas as Áreas</h3>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            {/* <Button>
               <Plus className="h-4 w-4 mr-2" />
               Add Area
-            </Button>
+            </Button> */}
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add New Area</DialogTitle>
-              <DialogDescription>Create a new area with free text content.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAddArea} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Area Name</Label>
-                <Input
+                <Label htmlFor="name">Nome da Áreas</Label>
+                <select
                   id="name"
                   value={newArea.name}
                   onChange={(e) => setNewArea({ ...newArea, name: e.target.value })}
-                  placeholder="Enter area name"
+                  className="w-full border rounded-md p-2"
                   required
-                />
+                >
+                  <option value="">Select an area</option>
+                  <option value="Area 1">Area 1</option>
+                  <option value="Area 2">Area 2</option>
+                  <option value="Area 3">Area 3</option>
+                  {/* Adicione mais opções aqui */}
+                </select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="content">Content</Label>
-                <textarea
-                  id="content"
-                  className="w-full border rounded-md p-2"
-                  rows={5}
+                <SimpleWysiwyg
                   value={newArea.content}
-                  onChange={(e) => setNewArea({ ...newArea, content: e.target.value })}
-                  placeholder="Write your text here..."
-                  required
+                  onChange={(e) =>
+                    setNewArea({ ...newArea, content: e.target.value })
+                  }
+                  textareaProps={{ style: { width: "100%", minHeight: "150px", padding: "8px" } }}
                 />
+
               </div>
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
@@ -180,36 +175,35 @@ export function AreasTab() {
         </Dialog>
       </div>
 
+      {/* Tabela */}
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Content</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead>Edit</TableHead>
-              <TableHead>Delete</TableHead>
+              <TableHead>Nome</TableHead>
+              <TableHead>Criado</TableHead>
+              <TableHead>Editar</TableHead>
+              {/* <TableHead>Delete</TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
             {areas.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                  No areas found. Add your first area to get started.
+                  Nenhuma área encontrada. Adicione sua primeira área para começar.
                 </TableCell>
               </TableRow>
             ) : (
               areas.map((area) => (
                 <TableRow key={area.id}>
-                  <TableCell className="font-medium">{area.name}</TableCell>
-                  <TableCell className="max-w-xs truncate">{area.content}</TableCell>
+                  <TableCell className="font-medium">{area.name == 'footerTx'?'Rodapé': 'Área inicial'}</TableCell>
                   <TableCell>{new Date(area.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <Dialog
                       open={isEditDialogOpen && selectedArea?.id === area.id}
                       onOpenChange={(open) => {
-                        setIsEditDialogOpen(open)
-                        if (open) setSelectedArea(area)
+                        setIsEditDialogOpen(open);
+                        if (open) setSelectedArea(area);
                       }}
                     >
                       <DialogTrigger asChild>
@@ -219,44 +213,49 @@ export function AreasTab() {
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Edit Area</DialogTitle>
+                          <DialogTitle>Editar Área</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleEditArea} className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="editName">Area Name</Label>
-                            <Input
+                            <Label htmlFor="editName">Nome da Área</Label>
+                            <select
                               id="editName"
                               value={selectedArea?.name || ""}
                               onChange={(e) =>
-                                setSelectedArea((prev) => prev ? { ...prev, name: e.target.value } : null)
+                                setSelectedArea((prev) => (prev ? { ...prev, name: e.target.value } : null))
                               }
+                              className="w-full border rounded-md p-2"
                               required
-                            />
+                            >
+                              <option value="">Escolha uma Área</option>
+                              <option value="footerTx">Rodapé</option>
+                              <option value="botdy">Área inicial</option>
+                              {/* Adicione mais opções aqui */}
+                            </select>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="editContent">Content</Label>
-                            <textarea
-                              id="editContent"
-                              className="w-full border rounded-md p-2"
-                              rows={5}
-                              value={selectedArea?.content || ""}
-                              onChange={(e) =>
-                                setSelectedArea((prev) => prev ? { ...prev, content: e.target.value } : null)
-                              }
-                              required
-                            />
+                            <Label htmlFor="editContent">Conteúdo</Label>
+                            <div style={{ width: "100%" }}>
+                              <SimpleWysiwyg
+                                value={selectedArea?.content || ""}
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                                  setSelectedArea((prev) => (prev ? { ...prev, content: e.target.value } : null))
+                                }
+                              />
+
+                            </div>
                           </div>
                           <div className="flex justify-end space-x-2">
                             <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                              Cancel
+                              Cancelar
                             </Button>
-                            <Button type="submit">Save</Button>
+                            <Button type="submit">Salvar</Button>
                           </div>
                         </form>
                       </DialogContent>
                     </Dialog>
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -265,7 +264,7 @@ export function AreasTab() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               ))
             )}
@@ -273,5 +272,5 @@ export function AreasTab() {
         </Table>
       </div>
     </div>
-  )
+  );
 }

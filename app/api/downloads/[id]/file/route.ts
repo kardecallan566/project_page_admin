@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 
@@ -61,5 +61,28 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error uploading file:", error);
     return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });
+  }
+  
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+  try {
+    const download = await prisma.download.findUnique({ where: { id } });
+    if (!download) return NextResponse.json({ error: "Download not found" }, { status: 404 });
+
+    // Apaga o arquivo do disco
+    const filePath = join(process.cwd(), "uploads", download.filePath);
+    if (existsSync(filePath)) {
+      await unlink(filePath);
+    }
+
+    // Apaga do banco
+    await prisma.download.delete({ where: { id } });
+
+    return NextResponse.json({ message: "Download deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting download:", error);
+    return NextResponse.json({ error: "Failed to delete download" }, { status: 500 });
   }
 }

@@ -155,7 +155,7 @@ export function CategoriesTab() {
   }
 
   const handleDeleteCategory = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this category?")) return
+    if (!confirm("Tem certeza de que deseja excluir esta categoria?")) return
     try {
       const response = await fetch(`/api/categories/${id}`, {
         method: "DELETE",
@@ -195,9 +195,27 @@ export function CategoriesTab() {
     }
   }
 
+  const handleDeleteDownload = async (id: string) => {
+    if (!confirm("Tem certeza de que deseja excluir este download?")) return
+
+    try {
+      const response = await fetch(`/api/downloads/${id}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        setDownloads(downloads.filter((download) => download.id !== id))
+      } else {
+        setError("Failed to delete download")
+      }
+    } catch (error) {
+      setError("An error occurred")
+    }
+  }
+
 
   if (isLoading) {
-    return <div className="text-center py-4">Loading categories...</div>
+    return <div className="text-center py-4">Carregando Categorias</div>
   }
 
   return (
@@ -208,35 +226,35 @@ export function CategoriesTab() {
         </Alert>
       )}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">All Categories</h3>
+        <h3 className="text-lg font-semibold">Todas Categorias</h3>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="h-4 w-4 mr-2" /> Add Category
+              <Plus className="h-4 w-4 mr-2" />Adicionar Categoria
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Category</DialogTitle>
+              <DialogTitle>Adicionar nova categoria</DialogTitle>
               <DialogDescription>
-                Create a new category and assign it to a system.
+                Crie uma nova categoria e atribua a um sistema.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAddCategory} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Category Name</Label>
+                <Label htmlFor="name">Nome da Categoria</Label>
                 <Input
                   id="name"
                   value={newCategory.name}
                   onChange={(e) =>
                     setNewCategory({ ...newCategory, name: e.target.value })
                   }
-                  placeholder="Enter category name"
+                  placeholder="Digite o nome da categoria"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="system">System</Label>
+                <Label htmlFor="system">Sistema</Label>
                 <Select
                   value={newCategory.systemId}
                   onValueChange={(value) =>
@@ -244,7 +262,7 @@ export function CategoriesTab() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a system" />
+                    <SelectValue placeholder="Selecione um sistema" />
                   </SelectTrigger>
                   <SelectContent>
                     {systems.map((system) => (
@@ -261,9 +279,9 @@ export function CategoriesTab() {
                   variant="outline"
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  Cancel
+                  Cancelar
                 </Button>
-                <Button type="submit">Create Category</Button>
+                <Button type="submit">Sistema</Button>
               </div>
             </form>
           </DialogContent>
@@ -273,12 +291,12 @@ export function CategoriesTab() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>System</TableHead>
+              <TableHead>Nome</TableHead>
+              <TableHead>Sistema</TableHead>
               <TableHead>Download</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="w-[100px]">Edit</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
+              <TableHead>Criado</TableHead>
+              <TableHead className="w-[100px]">Editar</TableHead>
+              <TableHead className="w-[100px]">Deletar</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -288,7 +306,7 @@ export function CategoriesTab() {
                   colSpan={4}
                   className="text-center text-muted-foreground py-8"
                 >
-                  No categories found. Add your first category to get started.
+                  Nenhuma categoria encontrada. Adicione sua primeira categoria para começar.
                 </TableCell>
               </TableRow>
             ) : (
@@ -324,11 +342,11 @@ export function CategoriesTab() {
                         <form onSubmit={handleUpload} className="flex space-x-2 mb-4">
                           <input
                             type="text"
-                            placeholder="File name"
+                            placeholder="Nome do arquivo"
                             value={uploadName}
                             onChange={(e) => setUploadName(e.target.value)}
                             required
-                            className="border rounded p-1 flex-1"
+                            className="border rounded p-1 flex-1 max-w-md max-h-12"
                           />
                           <input
                             type="file"
@@ -336,7 +354,7 @@ export function CategoriesTab() {
                               setUploadFile(e.target.files ? e.target.files[0] : null)
                             }
                             required
-                            className="border rounded p-1"
+                            className="border rounded p-1 max-w-sm max-h-12"
                           />
                           <Button type="submit">Upload</Button>
                         </form>
@@ -346,10 +364,11 @@ export function CategoriesTab() {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>File</TableHead>
-                                <TableHead>Size</TableHead>
+                                <TableHead>Nome</TableHead>
+                                <TableHead>Arquivo</TableHead>
+                                <TableHead>Tamanho</TableHead>
                                 <TableHead>Download</TableHead>
+                                <TableHead>Deletar</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -363,12 +382,22 @@ export function CategoriesTab() {
                                       <Button>Download</Button>
                                     </a>
                                   </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleDeleteDownload(download.id)}
+                                      className="text-destructive hover:text-destructive"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </TableCell>
                                 </TableRow>
                               ))}
                               {downloads.length === 0 && (
                                 <TableRow>
                                   <TableCell colSpan={4} className="text-center py-4">
-                                    No downloads found.
+                                    Arquivos não encontrados.
                                   </TableCell>
                                 </TableRow>
                               )}
@@ -402,11 +431,11 @@ export function CategoriesTab() {
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Edit Category</DialogTitle>
+                          <DialogTitle>Editar Categoria</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleEditCategory} className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="editName">Category Name</Label>
+                            <Label htmlFor="editName">Nome da Categoria</Label>
                             <Input
                               id="editName"
                               value={editCategoryName}
@@ -415,13 +444,13 @@ export function CategoriesTab() {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="editSystem">System</Label>
+                            <Label htmlFor="editSystem">Sistema</Label>
                             <Select
                               value={editCategorySystemId}
                               onValueChange={(val) => setEditCategorySystemId(val)}
                             >
                               <SelectTrigger id="editSystem">
-                                <SelectValue placeholder="Select a system" />
+                                <SelectValue placeholder="Escolha um Sistema" />
                               </SelectTrigger>
                               <SelectContent>
                                 {systems.map((s) => (
@@ -434,9 +463,9 @@ export function CategoriesTab() {
                           </div>
                           <div className="flex justify-end space-x-2">
                             <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                              Cancel
+                              Cancelar
                             </Button>
-                            <Button type="submit">Save</Button>
+                            <Button type="submit">Salvar</Button>
                           </div>
                         </form>
                       </DialogContent>

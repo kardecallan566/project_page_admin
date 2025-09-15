@@ -65,7 +65,7 @@ export default function LoginPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading...</p>
+          <p className="mt-2 text-muted-foreground">Carregando...</p>
         </div>
       </div>
     )
@@ -76,14 +76,14 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="text-2xl font-bold text-foreground hover:text-primary">
-            Admin System
+            Sistema Administrativo
           </Link>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Admin Login</CardTitle>
-            <CardDescription>Enter your credentials to access the admin panel</CardDescription>
+            <CardTitle>Login do Administrador</CardTitle>
+            <CardDescription>Insira suas credenciais para acessar o painel de administração</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -94,7 +94,7 @@ export default function LoginPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">Nome de usuário</Label>
                 <Input
                   id="username"
                   type="text"
@@ -106,7 +106,7 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Senha</Label>
                 <Input
                   id="password"
                   type="password"
@@ -118,19 +118,18 @@ export default function LoginPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? "Acessando..." : "Acessar"}
               </Button>
             </form>
 
             <div className="mt-4 text-center text-sm text-muted-foreground">
-              <p>Default credentials: admin / admin123</p>
             </div>
           </CardContent>
         </Card>
 
         <div className="text-center mt-4">
           <Link href="/" className="text-sm text-muted-foreground hover:text-primary">
-            ← Back to homepage
+            ← Voltar para a página inicial
           </Link>
         </div>
       </div>

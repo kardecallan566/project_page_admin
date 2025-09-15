@@ -22,13 +22,13 @@ export function AdminDashboard() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <Settings className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold text-card-foreground">Admin Panel</h1>
+            <h1 className="text-2xl font-bold text-card-foreground">Painel de Administração</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-muted-foreground">Welcome, {user?.username}</span>
+            <span className="text-sm text-muted-foreground">Bem-vindo(a), {user?.username}</span>
             <Button variant="outline" size="sm" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
-              Logout
+              Sair
             </Button>
           </div>
         </div>
@@ -38,34 +38,29 @@ export function AdminDashboard() {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-foreground mb-2">Dashboard</h2>
-          <p className="text-muted-foreground">Manage your systems, categories, areas, and downloads</p>
+          <p className="text-muted-foreground">Gerencie seus sistemas, categorias, áreas e downloads</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="systems" className="flex items-center space-x-2">
               <Database className="h-4 w-4" />
-              <span>Systems</span>
+              <span>Sistemas</span>
             </TabsTrigger>
             <TabsTrigger value="categories" className="flex items-center space-x-2">
               <FolderTree className="h-4 w-4" />
-              <span>Categories</span>
+              <span>Categorias</span>
             </TabsTrigger>
             <TabsTrigger value="areas" className="flex items-center space-x-2">
               <MapPin className="h-4 w-4" />
-              <span>Areas</span>
+              <span>Áreas</span>
             </TabsTrigger>
-            {/* <TabsTrigger value="downloads" className="flex items-center space-x-2">
-              <Download className="h-4 w-4" />
-              <span>Downloads</span>
-            </TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="systems">
             <Card>
               <CardHeader>
-                <CardTitle>Systems Management</CardTitle>
-                <CardDescription>Manage all systems in your organization</CardDescription>
+                <CardTitle>Gerenciamento de Sistemas</CardTitle>
               </CardHeader>
               <CardContent>
                 <SystemsTab />
@@ -76,8 +71,7 @@ export function AdminDashboard() {
           <TabsContent value="categories">
             <Card>
               <CardHeader>
-                <CardTitle>Categories Management</CardTitle>
-                <CardDescription>Organize categories within your systems</CardDescription>
+                <CardTitle>Gerenciamento de Categorias</CardTitle>
               </CardHeader>
               <CardContent>
                 <CategoriesTab />
@@ -88,8 +82,7 @@ export function AdminDashboard() {
           <TabsContent value="areas">
             <Card>
               <CardHeader>
-                <CardTitle>Areas Management</CardTitle>
-                <CardDescription>Define specific areas within categories</CardDescription>
+                <CardTitle>Gerenciamento de Áreas</CardTitle>
               </CardHeader>
               <CardContent>
                 <AreasTab />
@@ -97,17 +90,6 @@ export function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="downloads">
-            <Card>
-              <CardHeader>
-                <CardTitle>Downloads Management</CardTitle>
-                <CardDescription>Upload and manage downloadable files</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DownloadsTab />
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </main>
     </div>

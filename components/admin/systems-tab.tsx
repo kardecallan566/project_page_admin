@@ -80,7 +80,7 @@ export function SystemsTab() {
   }
 
   const handleDeleteSystem = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this system?")) return
+    if (!confirm("Tem certeza de que deseja excluir este sistema?")) return
 
     try {
       const response = await fetch(`/api/systems/${id}`, { method: "DELETE" })
@@ -112,7 +112,7 @@ export function SystemsTab() {
     }
   }
 
-  if (isLoading) return <div className="text-center py-4">Loading systems...</div>
+  if (isLoading) return <div className="text-center py-4">Carregando sistemas...</div>
 
   return (
     <div className="space-y-4">
@@ -124,21 +124,21 @@ export function SystemsTab() {
 
       {/* Add System Dialog */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">All Systems</h3>
+        <h3 className="text-lg font-semibold">Todos os Sistemas</h3>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Add System
+              Adicionar Sistema
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New System</DialogTitle>
+              <DialogTitle>Adicionar novo Sistema</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAddSystem} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">System Name</Label>
+                <Label htmlFor="name">Nome do Sistema</Label>
                 <Input
                   id="name"
                   value={newSystem.name}
@@ -147,7 +147,7 @@ export function SystemsTab() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="link">System Link</Label>
+                <Label htmlFor="link">Link do Sistema</Label>
                 <Input
                   id="link"
                   type="url"
@@ -158,9 +158,9 @@ export function SystemsTab() {
               </div>
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
+                  Cancelar
                 </Button>
-                <Button type="submit">Create System</Button>
+                <Button type="submit">Criar Sistema</Button>
               </div>
             </form>
           </DialogContent>
@@ -172,18 +172,18 @@ export function SystemsTab() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
+              <TableHead>Nome</TableHead>
               <TableHead>Link</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="w-[100px]">Edit</TableHead>
-              <TableHead className="w-[120px]">Actions</TableHead>
+              <TableHead>Criado</TableHead>
+              <TableHead className="w-[100px]">Editar</TableHead>
+              <TableHead className="w-[120px]">Deletar</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {systems.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                  No systems found. Add your first system to get started.
+                  Nenhum sistema encontrado. Adicione seu primeiro sistema para começar.
                 </TableCell>
               </TableRow>
             ) : (
@@ -218,11 +218,11 @@ export function SystemsTab() {
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Edit System</DialogTitle>
+                          <DialogTitle>Editar Sistema</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleEditSystem} className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="editName">System Name</Label>
+                            <Label htmlFor="editName">Nome do Sistema</Label>
                             <Input
                               id="editName"
                               value={selectedSystem?.name || ""}
@@ -233,7 +233,7 @@ export function SystemsTab() {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="editLink">System Link</Label>
+                            <Label htmlFor="editLink">Link do Sistema</Label>
                             <Input
                               id="editLink"
                               type="url"
@@ -246,9 +246,9 @@ export function SystemsTab() {
                           </div>
                           <div className="flex justify-end space-x-2">
                             <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                              Cancel
+                              Cancelar
                             </Button>
-                            <Button type="submit">Save</Button>
+                            <Button type="submit">Salvar</Button>
                           </div>
                         </form>
                       </DialogContent>
