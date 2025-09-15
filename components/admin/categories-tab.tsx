@@ -1,6 +1,6 @@
 "use client"
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, ChangeEvent, FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,7 +28,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Plus, Trash2, Pencil } from "lucide-react"
+import { Plus, Trash2, Pencil, Eye } from "lucide-react"
 
 interface Category {
   id: string
@@ -53,6 +53,11 @@ export function CategoriesTab() {
   const [editCategoryName, setEditCategoryName] = useState("")
   const [editCategorySystemId, setEditCategorySystemId] = useState("")
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false)
+  const [downloadCategoryId, setDownloadCategoryId] = useState<string | null>(null)
+  const [downloads, setDownloads] = useState<any[]>([])
+  const [uploadName, setUploadName] = useState("")
+  const [uploadFile, setUploadFile] = useState<File | null>(null)
   const [error, setError] = useState("")
 
   useEffect(() => {
@@ -71,6 +76,41 @@ export function CategoriesTab() {
       setError("Failed to fetch categories")
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const openDownloadModal = async (categoryId: string) => {
+    setDownloadCategoryId(categoryId)
+    setIsDownloadModalOpen(true)
+    try {
+      const res = await fetch(`/api/downloads?categoryId=${categoryId}`)
+      const data = await res.json()
+      setDownloads(data)
+    } catch (error) {
+      console.error("Failed to fetch downloads")
+      setDownloads([])
+    }
+  }
+
+  const handleUpload = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!uploadName || !uploadFile || !downloadCategoryId) return
+
+    const formData = new FormData()
+    formData.append("name", uploadName)
+    formData.append("file", uploadFile)
+    formData.append("categoryId", downloadCategoryId)
+
+    try {
+      const res = await fetch("/api/downloads", { method: "POST", body: formData })
+      const newDownload = await res.json()
+      if (!newDownload.error) {
+        setDownloads((prev) => [newDownload, ...prev])
+        setUploadName("")
+        setUploadFile(null)
+      }
+    } catch (err) {
+      console.error("Failed to upload file")
     }
   }
 
@@ -259,7 +299,84 @@ export function CategoriesTab() {
                   </TableCell>
                   <TableCell>{category.system.name}</TableCell>
                   <TableCell className="font-medium">
-                    {category.name}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openDownloadModal(category.id)}
+                      className="flex items-center space-x-1 text-green-600 hover:text-green-800"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+
+                    <Dialog open={isDownloadModalOpen} onOpenChange={setIsDownloadModalOpen}>
+                      <DialogContent style={{ width: "70vw", maxWidth: "900px" }} className="
+    h-[40vh]          // altura 40% da tela
+    overflow-auto     // scroll interno se necessário
+    p-6
+    rounded-lg
+    bg-white dark:bg-gray-900
+  ">
+                        <DialogHeader>
+                          <DialogTitle>Downloads</DialogTitle>
+                        </DialogHeader>
+
+                        {/* Form de upload */}
+                        <form onSubmit={handleUpload} className="flex space-x-2 mb-4">
+                          <input
+                            type="text"
+                            placeholder="File name"
+                            value={uploadName}
+                            onChange={(e) => setUploadName(e.target.value)}
+                            required
+                            className="border rounded p-1 flex-1"
+                          />
+                          <input
+                            type="file"
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setUploadFile(e.target.files ? e.target.files[0] : null)
+                            }
+                            required
+                            className="border rounded p-1"
+                          />
+                          <Button type="submit">Upload</Button>
+                        </form>
+
+                        {/* Tabela de downloads */}
+                        <div className="overflow-auto max-h-[60vh]">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>File</TableHead>
+                                <TableHead>Size</TableHead>
+                                <TableHead>Download</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {downloads.map((download) => (
+                                <TableRow key={download.id}>
+                                  <TableCell>{download.name}</TableCell>
+                                  <TableCell>{download.fileName}</TableCell>
+                                  <TableCell>{(download.fileSize / 1024).toFixed(2)} KB</TableCell>
+                                  <TableCell>
+                                    <a href={`/api/downloads/${download.id}`} download={download.fileName}>
+                                      <Button>Download</Button>
+                                    </a>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                              {downloads.length === 0 && (
+                                <TableRow>
+                                  <TableCell colSpan={4} className="text-center py-4">
+                                    No downloads found.
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </TableCell>
                   <TableCell>
                     {new Date(category.createdAt).toLocaleDateString()}

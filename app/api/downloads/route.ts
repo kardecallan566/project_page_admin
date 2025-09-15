@@ -4,11 +4,17 @@ import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 import { existsSync } from "fs"
 
-export async function GET() {
+// GET: listar downloads (opcionalmente por categoria)
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const categoryId = searchParams.get("categoryId")
+
     const downloads = await prisma.download.findMany({
+      where: categoryId ? { categoryId } : {},
       orderBy: { createdAt: "desc" },
     })
+
     return NextResponse.json(downloads)
   } catch (error) {
     console.error("Error fetching downloads:", error)
@@ -16,40 +22,42 @@ export async function GET() {
   }
 }
 
+// POST: criar/upload de download
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const name = formData.get("name") as string
     const file = formData.get("file") as File
+    const categoryId = formData.get("categoryId") as string
 
-    if (!name || !file) {
-      return NextResponse.json({ error: "Name and file are required" }, { status: 400 })
+    if (!name || !file || !categoryId) {
+      return NextResponse.json({ error: "Name, file and categoryId are required" }, { status: 400 })
     }
 
-    // Create uploads directory if it doesn't exist
+    // Criar diretório uploads se não existir
     const uploadsDir = join(process.cwd(), "uploads")
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true })
     }
 
-    // Generate unique filename
+    // Gerar nome único do arquivo
     const timestamp = Date.now()
     const fileName = `${timestamp}-${file.name}`
     const filePath = join(uploadsDir, fileName)
 
-    // Save file to disk
+    // Salvar arquivo no disco
     const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filePath, buffer)
+    await writeFile(filePath, Buffer.from(bytes))
 
-    // Save to database
+    // Salvar registro no banco de dados
     const download = await prisma.download.create({
       data: {
         name,
         fileName: file.name,
-        filePath: fileName, // Store relative path
+        filePath: fileName,
         fileSize: file.size,
         mimeType: file.type || "application/octet-stream",
+        categoryId,
       },
     })
 

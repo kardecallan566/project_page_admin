@@ -1,36 +1,38 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { unlink } from "fs/promises"
-import { join } from "path"
-import { existsSync } from "fs"
+import { type NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { readFile } from "fs/promises";
+import { join } from "path";
+import { existsSync } from "fs";
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = params
+    const { id } = params;
 
-    // Get download info before deleting
     const download = await prisma.download.findUnique({
       where: { id },
-    })
+    });
 
     if (!download) {
-      return NextResponse.json({ error: "Download not found" }, { status: 404 })
+      return NextResponse.json({ error: "Download not found" }, { status: 404 });
     }
 
-    // Delete file from disk
-    const filePath = join(process.cwd(), "uploads", download.filePath)
-    if (existsSync(filePath)) {
-      await unlink(filePath)
+    const filePath = join(process.cwd(), "uploads", download.filePath);
+
+    if (!existsSync(filePath)) {
+      return NextResponse.json({ error: "File not found on disk" }, { status: 404 });
     }
 
-    // Delete from database
-    await prisma.download.delete({
-      where: { id },
-    })
+    const fileBuffer = await readFile(filePath);
 
-    return NextResponse.json({ success: true })
+    return new NextResponse(fileBuffer, {
+      headers: {
+        "Content-Type": download.mimeType,
+        "Content-Disposition": `attachment; filename="${download.fileName}"`,
+        "Content-Length": download.fileSize.toString(),
+      },
+    });
   } catch (error) {
-    console.error("Error deleting download:", error)
-    return NextResponse.json({ error: "Failed to delete download" }, { status: 500 })
+    console.error("Error serving file:", error);
+    return NextResponse.json({ error: "Failed to serve file" }, { status: 500 });
   }
 }
